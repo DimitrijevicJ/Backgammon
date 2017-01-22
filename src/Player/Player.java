@@ -29,6 +29,7 @@ public abstract class Player extends Thread {
     public int getTokensHome(){return tokensHome;}
     public int getTokensInGame(){return tokensInGame;}
 
+
     public void run(){
         try{
             while(true){
@@ -40,29 +41,28 @@ public abstract class Player extends Thread {
                 int moves=2;
 
                 while(moves > 0){
-                    int from = -1;
-                    while(from == -1){
-                        try{
-                            from = choseToken();
-                        }catch (Exception e){
-                            System.out.print(e);
+                    try {
+                        int from = -1;
+                        while (from == -1) {
+                            try {
+                                from = choseToken();
+                            } catch (Exception e) {
+                                System.out.print(e);
+                            }
                         }
-                    }
-                    //token successfully chosen
+                        //token successfully chosen
 
-                    int to = -1;
-                    while(to == -1){
-                        try{
-                            to = chosePosition(from);
-                        }catch (Exception e){
-                            System.out.print(e);
-                        }
-                    }
-                    //position chosen and token moved
+                        int to = chosePosition(from);
+                        //position chosen and token moved
 
-                    points -= to;
+                        Move move = new Move(from, to);
 
-                    --moves;
+                        game.table.move(move, game.dices);
+
+                        points -= from - to;
+
+                        --moves;
+                    }catch(Exception e){System.out.println(e);}
                 }
 
                 //turn played, continue game
@@ -84,26 +84,10 @@ public abstract class Player extends Thread {
         return token;
     }
 
-    int chosePosition(int from)throws InvalidMoveException, NotAllTokensHomeException {
+    int chosePosition(int from){
         int to = inputMovePoint();
-        Move move = new Move(from,to);
 
-        if(to == 0){
-            //we are trying to out the token
-            if(tokensHome == tokensInGame){
-                game.table.move(move);
-                tokensHome--;
-                tokensInGame--;
-            }
-        }
-        else{
-            game.table.move(move);
-
-            //check if the token moved to the home area
-            if(from>6 && to<=6) tokensHome++;
-        }
-
-        return move.getFromPoint() - move.getToPoint();
+        return to;
     }
 
     protected boolean checkCenter()   //true if there is nothing on the center for the current player
@@ -123,7 +107,7 @@ public abstract class Player extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(token<=25 && token>=0) return token;
+            if(token<=25 && token>=1) return token;
         }
     }
     //TODO choose token : inputing the number of the point on which is the token(0 for the center); +GUI - clicked token

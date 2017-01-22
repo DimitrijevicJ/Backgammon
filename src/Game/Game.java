@@ -33,7 +33,7 @@ public class Game extends Thread{
     public Dice dices = new Dice();
     private boolean wereDoubleDices = false;
 
-    public Table table = new Table(this);
+    public Table table = new Table();
 
     public EndGame endGame=null;
 
@@ -64,6 +64,7 @@ public class Game extends Thread{
             if(dices.isDoubleDices() && wereDoubleDices == false) wereDoubleDices = true;
             else{
                 onTheMove = getOtherPlayer();
+                table.changePlayer();
                 wereDoubleDices = false;
             }
         }
@@ -71,8 +72,7 @@ public class Game extends Thread{
 
     public Turn getGameTurn(){return gameTurn;}
 
-    public Player getPlaying(){return players[onTheMove];}
-    public int getOtherPlayer(){ return Math.abs(onTheMove-1); }
+    public int getOtherPlayer(){ return 1-onTheMove; }
 
     private EndGame checkEndGameStatus(){
         if(players[onTheMove].getPoints()!=0) return null;

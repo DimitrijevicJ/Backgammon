@@ -12,6 +12,8 @@ public class Point {
 
     public Point(Table t){ table = t; }
 
+    public int count(){return tokens.length;}
+
     public boolean checkMove(Token token){
         //putting on empty point
         if (top == -1 || tokens[top].sameType(token) || top == 0) return true;

@@ -22,13 +22,23 @@ public class AI {
                 case OPPROLL:
                     return OPPMOVE;
             }
+            return null;
         }
+    }
+
+
+    public Table copyTable(Table table){
+        //TODO do this
+        return null;
     }
 
     public int choseMove(LEVEL currentTreeLevel, int currentDepth, int totalDepth, Table table, Dice[] dice) {
         //TODO each call of choseMove changes the currentTreeLevel as the currentTreeLevel.next(), currentDepth+1
         //TODO MYMOVE and OPPMOVE change the table, they create new table from the given one and send it to every function call everything dones is with the new table it also changes the dices it uses
         //TODO MYROLL and OPPROLL change the dices as they set them table stays the same
+
+        Table newTable = copyTable(table);
+
         if (currentTreeLevel == LEVEL.MYMOVE) {
             for (int i = 1; i <= 24; i++) {
                 for (int j = 0; j < 2; j++)
