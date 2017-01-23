@@ -7,6 +7,10 @@ public class Dice {
     private int values[] = new int[2];
     private boolean doubleDices = false;
 
+    public Dice(){}
+    public Dice(int k1, int k2){values[0]=k1; values[1]=k2;}
+    public Dice(Dice dice){values[0]=dice.values[0]; values[1]=dice.values[1];}
+
     public void rollDices(){
         values[0] = rollDice();
         values[1] = rollDice();

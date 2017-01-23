@@ -3,7 +3,6 @@ package Table;
 import Exceptions.InvalidMoveException;
 import Exceptions.NotAllTokensHomeException;
 import Moves.Move;
-import Player.WhitePlayer;
 import Tokens.RedToken;
 import Tokens.Token;
 import Tokens.WhiteToken;
@@ -15,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by dz on 20.1.17..
  */
+//TODO TABLE SHOULD KNOW THE POINTS OF BOTH PLAYERS
 //TABLE SHOULD BE THE WAY WHITE PLAYER SEES IT
 public class Table {
     private final int tableSize = 24;
@@ -53,9 +53,22 @@ public class Table {
     }
     private int onTheMove = 0;
 
+    public Table(){}
+    public Table(Table table){
+        {
+            for(int i=0; i<tableSize; i++) points[i] = new Point(this);
+            for(int i=0; i<2; i++) { center[i] = new Point(this); outer[i] = new Point(this); }
+        }
+        {
+            //TODO COPY WHAT IS ON POINTS, ON CENTER AND IN OUTER
+        }
+        onTheMove=table.onTheMove;
+    }
+
     public void move(Move move, Dice dices)throws InvalidMoveException, NotAllTokensHomeException{
         //start token is always valid
-
+        //check if the token is ours
+        if(checkToken(points[move.getFromPoint()].top())) throw new InvalidMoveException();  //TODO token not ours
         //check if the move is valid for the player
         if (!checkDirection(move)) throw  new InvalidMoveException();
         //check if the move is valid
@@ -119,16 +132,21 @@ public class Table {
     public void putOnCenter(Token token){
         int tokenColor = token instanceof WhiteToken ? 0 : 1;
         center[tokenColor].put(token);
+        //TODO WHEN TOKEN PUT ON CENTER POINTS NEED TO BE ADDED FROM HIS PREVIOUS POSITION
     }
 
     private Token takeFromCenter(){
         return center[onTheMove].get();
     }
 
-    public boolean checkCenter(Player player){
-        int color = player instanceof WhitePlayer ? 0 : 1;
+    public boolean checkCenter(){
+        int color = onTheMove;
         if(center[color].top()==null) return true;
         else return false;
+    }
+    public boolean checkCenter(int player){
+        if(center[player].top()==null) return true;
+        return false;
     }
 
     private boolean checkToken(Token token){
@@ -136,8 +154,8 @@ public class Table {
         return false;
 
     }
-    public boolean checkOpposing(Player player){    //if it finds any token in the opposing field, return false, if nothing return true
-        if(player instanceof WhitePlayer) {
+    public boolean checkOpposing(int player){    //if it finds any token in the opposing field, return false, if nothing return true
+        if(player == 0) {
             for (int i = 24; i >= 19; i--)
                 if (points[i].top() != null) return false;
         }

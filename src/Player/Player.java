@@ -9,25 +9,30 @@ import Game.EndGames.Victory;
 import Game.Turn;
 import Game.Game;
 import Moves.Move;
+import Tokens.RedToken;
+import Tokens.Token;
+import Tokens.WhiteToken;
 
 import java.io.IOException;
 
 /**
  * Created by dz on 20.1.17..
  */
-public abstract class Player extends Thread {
+public class Player extends Thread {
     private int points = 167;
     private int tokensHome = 5;
     private int tokensInGame = 15;
     private Turn turn = new Turn();
     protected Game game;
+    private int color;
 
-    public Player(Game g){game = g;}
+    public Player(Game g, int col){game = g; color=col;}
 
     public Turn getTurn(){return turn;}
     public int getPoints(){return points;}
     public int getTokensHome(){return tokensHome;}
     public int getTokensInGame(){return tokensInGame;}
+    public int getColor(){return color;}
 
 
     public void run(){
@@ -92,10 +97,15 @@ public abstract class Player extends Thread {
 
     protected boolean checkCenter()   //true if there is nothing on the center for the current player
     {
-        return game.table.checkCenter(this);
+        return game.table.checkCenter();
     }
 
-    protected abstract boolean checkToken(int point);   //true if the token on the point we have chosen is ours
+    protected boolean checkToken(int point)   //true if the token on the point we have chosen is ours
+    {
+        Token token = game.table.chosenToken(point);
+        if ((token instanceof RedToken && color == 1 )||(token instanceof WhiteToken && color == 0 )) return true;
+        return false;
+    }
 
     //TODO choose token : inputing the number of the point on which is the token(0 for the center); +GUI - clicked token
     private int inputChoseToken() {

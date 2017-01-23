@@ -5,8 +5,6 @@ import Game.EndGames.EndGame;
 import Game.EndGames.Gammon;
 import Game.EndGames.Victory;
 import Player.Player;
-import Player.WhitePlayer;
-import Player.RedPlayer;
 import Table.Table;
 
 /**
@@ -15,8 +13,8 @@ import Table.Table;
 public class Game extends Thread{
     private Player[] players = new Player[2];
     {
-        players[0] = new WhitePlayer(this);
-        players[1] = new RedPlayer(this);
+        players[0] = new Player(this,0);
+        players[1] = new Player(this, 1);
     }
     private Player winner = null;
 
@@ -80,7 +78,7 @@ public class Game extends Thread{
         int losingPlayer = getOtherPlayer();
 
         //backgammon
-        if(!table.checkCenter(players[losingPlayer]) || table.checkOpposing(players[losingPlayer])) return new Backgammon();
+        if(!table.checkCenter(losingPlayer) || table.checkOpposing(losingPlayer)) return new Backgammon();
 
         //gammon
         if (players[losingPlayer].getTokensInGame() == 15
