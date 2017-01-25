@@ -83,10 +83,9 @@ public class Game extends Thread{
     public boolean checkPat(){
         //TODO DO CHECK PAT FUNCTION
         if(!table.checkCenter(onTheMove) && !table.checkCenter(getOtherPlayer())){
-            for(int i=1; i<=6; i++)
-                if(table.checkClosed())
+            if(table.checkClosed(onTheMove) && table.checkClosed(getOtherPlayer())) return true;
         }
-        return true;
+        return false;
     }
 
     private EndGame checkEndGameStatus(){

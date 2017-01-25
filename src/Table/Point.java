@@ -12,7 +12,7 @@ public class Point {
 
     public Point(Table t){ table = t; }
 
-    public int count(){return tokens.length;}
+    public int count(){return top+1;}
 
     public boolean checkMove(Token token){
         //putting on empty point

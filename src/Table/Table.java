@@ -186,4 +186,10 @@ public class Table {
             if(points[i].top() instanceof RedToken) count += points[i].count();
         return count;
     }
+
+    public boolean checkClosed(int player){
+        int home = (player==0)?1:19, end = (player==0)?6:24;
+        for(int i=home; home!=end; home++)
+            if()
+    }
 }
