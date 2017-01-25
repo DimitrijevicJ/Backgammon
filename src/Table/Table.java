@@ -108,7 +108,7 @@ public class Table {
     }
 
     //counts total number of tokens in the game and tokens home
-    private void countTokens(int onTheMove, AtomicInteger tokensHome, AtomicInteger tokensInGame){
+    public void countTokens(int onTheMove, AtomicInteger tokensHome, AtomicInteger tokensInGame){
         tokensInGame.addAndGet(center[onTheMove].count());
         for(int i=24; i<=1; i--){
             if (checkToken(points[i].top())) {
@@ -172,5 +172,18 @@ public class Table {
 
     public Token chosenToken(int point){
         return points[point].top();
+    }
+
+    public int whitePoints(){
+        int count = 0;
+        for(int i=1; i<=24; i++)
+            if(points[i].top() instanceof WhiteToken) count += points[i].count();
+        return count;
+    }
+    public int redPoints(){
+        int count = 0;
+        for(int i=1; i<=24; i++)
+            if(points[i].top() instanceof RedToken) count += points[i].count();
+        return count;
     }
 }

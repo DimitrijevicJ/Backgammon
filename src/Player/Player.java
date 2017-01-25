@@ -18,10 +18,7 @@ import java.io.IOException;
 /**
  * Created by dz on 20.1.17..
  */
-public class Player extends Thread {
-    private int points = 167;
-    private int tokensHome = 5;
-    private int tokensInGame = 15;
+public abstract class Player extends Thread {
     private Turn turn = new Turn();
     protected Game game;
     private int color;
@@ -29,9 +26,6 @@ public class Player extends Thread {
     public Player(Game g, int col){game = g; color=col;}
 
     public Turn getTurn(){return turn;}
-    public int getPoints(){return points;}
-    public int getTokensHome(){return tokensHome;}
-    public int getTokensInGame(){return tokensInGame;}
     public int getColor(){return color;}
 
 
@@ -43,32 +37,7 @@ public class Player extends Thread {
                     turn.wait();
                 }
 
-                int moves=2;
-
-                while(moves > 0){
-                    try {
-                        int from = -1;
-                        while (from == -1) {
-                            try {
-                                from = choseToken();
-                            } catch (Exception e) {
-                                System.out.print(e);
-                            }
-                        }
-                        //token successfully chosen
-
-                        int to = chosePosition(from);
-                        //position chosen and token moved
-
-                        Move move = new Move(from, to);
-
-                        game.table.move(move, game.dices);
-
-                        points -= from - to;
-
-                        --moves;
-                    }catch(Exception e){System.out.println(e);}
-                }
+                playMoves();
 
                 //turn played, continue game
                 game.getGameTurn().notify();
@@ -78,6 +47,8 @@ public class Player extends Thread {
             inform(game.endGame);
         }
     }
+
+    protected abstract void playMoves();
 
     int choseToken() throws TokenOnCenterException, InvalidTokenException {
         int token=inputChoseToken();
@@ -140,5 +111,10 @@ public class Player extends Thread {
             if(endGame instanceof Victory) System.out.println("You lost!");
             else System.out.println("You have been "+endGame+"d!");
         }
+    }
+
+    public int getPoints(){
+        if(color == 0) return game.table.whitePoints();
+        else return game.table.redPoints();
     }
 }

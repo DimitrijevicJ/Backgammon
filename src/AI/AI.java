@@ -47,54 +47,79 @@ public class AI extends Player{
         }catch(Exception e){return false;}
     }
 
-    public int choseMove(LEVEL currentTreeLevel, int currentDepth, int totalDepth, Table table, Dice dices) {
-        //TODO fix this return it should return current point counts and empty best moves
-        if(currentDepth==totalDepth) return 167;
+    class OneMove{
+        Move[] moves = new Move[2];
+        double ratio;
+        OneMove nextBrother=null;
+        OneMove firstChild=null, lastChild=null;
+        OneMove(Move[] m, int points1, int points2){moves[0]=m[0]; moves[1]=m[1]; ratio = (double)points1/(double)points2;}
+        OneMove(Move[] m, double rat){moves[0]=m[0]; moves[1]=m[1]; ratio = rat;}
+        void addChild(OneMove child){
+            if(firstChild==null)firstChild = lastChild = child;
+            else lastChild = lastChild.nextBrother = child;
+        }
+        void setRatio(double r){ratio = r;}
+    }
+
+    public OneMove choseMoves(LEVEL currentTreeLevel, int currentDepth, int totalDepth, OneMove move, Table table, Dice dices) {
+        if(currentDepth==totalDepth+1) return move;
 
         if (currentTreeLevel == LEVEL.MYMOVE) {
-            int maxValue = 0;
+            double bestValue = 500;  //for the current player best value is the smallest ratio
 
-            Move[] bestMove = new Move[2];  //bestMoves should be return through the function
-
+            OneMove bestMove = null;  //bestMoves should be return through the function
+            Move[] moves = new Move[2];
+            moves[0]=moves[1]=null;
 
             for (int f1 = 25; f1 >= 1; f1--)
                 for (int t1 = 24; t1 >= ((f1 - 12 > 0) ? f1 - 12 : 0); t1--)   //from and to for first move chosen
                     for (int f2 = 25; f2 >= 1; f2--)
                         for (int t2 = 24; t2 >= ((f2 - 12 > 0) ? f2 - 12 : 0); t2--)   //from and to for second move chosen
                         {
-                            boolean can = true;
+                            boolean canFirst = true;
                             Table newTable = copyTable(table);
                             Dice newDice = copyDices(dices);
 
-                            Move move1 = new Move(f1, t1);
-                            can = tryMove(move1, newTable, newDice);
+                            moves[1] = new Move(f1, t1);
+                            canFirst = tryMove(moves[1], newTable, newDice);
                             //first move try
-                            Move move2 = null;
-                            if (can) {
-                                move2 = new Move(f2, t2);
+                            if (canFirst) {
+                                moves[2] = new Move(f2, t2);
                                 //second move try
-                                tryMove(move2, newTable, newDice);
+                                tryMove(moves[2], newTable, newDice);
                             }
 
-                            int bestSubtree = choseMove(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, newTable, newDice);
+                            OneMove bestSubtree = null;
+                            OneMove playedMoves = null;
+                            //he played at least something
+                            if(canFirst){
+                                playedMoves = new OneMove(moves, newTable.whitePoints(), newTable.redPoints());
+                                move.addChild(playedMoves);
+                                bestSubtree = choseMoves(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, playedMoves, newTable, newDice);
+                            }
 
-                            //TODO condition
-                            if (bestSubtree > maxValue) {
-                                maxValue = bestSubtree;
-                                bestMove[0] = move1;
-                                bestMove[1] = move2;
+
+                            if (canFirst && bestSubtree.ratio < bestValue) {
+                                bestMove = playedMoves;
                             }
 
                         }
 
-            //TODO fix this, needs to return myValue, oppValue for condition and needs to return combination of best two moves
-            return maxValue;
+            //if he made no moves, he had no moves to make, which means he skipped the move and let the opponent play
+            if(bestMove == null) {
+                bestMove = new OneMove(moves, table.whitePoints(), table.redPoints());
+                move.addChild(bestMove);
+                bestMove= choseMoves(currentTreeLevel.nextLevel(), currentDepth+1, totalDepth, bestMove, table, dices);
+            }
+            return bestMove;
         }
 
         if (currentTreeLevel == LEVEL.OPPMOVE) {
-            int minValue = -1;
+            double worstValue = 500;  //for the current player best value is the smallest ratio
 
-            Move[] bestMove = new Move[2];  //bestMoves should be return through the function
+            OneMove worstMove = null;  //bestMoves should be return through the function
+            Move[] moves = new Move[2];
+            moves[0]=moves[1]=null;
 
 
             for (int f1 = 25; f1 >= 1; f1--)
@@ -102,58 +127,83 @@ public class AI extends Player{
                     for (int f2 = 25; f2 >= 1; f2--)
                         for (int t2 = 24; t2 >= ((f2 - 12 > 0) ? f2 - 12 : 0); t2--)   //from and to for second move chosen
                         {
-                            boolean can = true;
+                            boolean canFirst = true;
                             Table newTable = copyTable(table);
                             Dice newDice = copyDices(dices);
 
-                            Move move1 = new Move(f1, t1);
-                            can = tryMove(move1, newTable, newDice);
+                            moves[1] = new Move(f1, t1);
+                            canFirst = tryMove(moves[1], newTable, newDice);
                             //first move try
-                            Move move2 = null;
-                            if (can) {
-                                move2 = new Move(f2, t2);
+                            if (canFirst) {
+                                moves[2] = new Move(f2, t2);
                                 //second move try
-                                tryMove(move2, newTable, newDice);
+                                tryMove(moves[2], newTable, newDice);
                             }
 
-                            int bestSubtree = choseMove(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, newTable, newDice);
+                            OneMove worstSubtree = null;
+                            OneMove playedMoves = null;
+                            //he played at least something
+                            if(canFirst){
+                                playedMoves = new OneMove(moves, newTable.whitePoints(), newTable.redPoints());
+                                move.addChild(playedMoves);
+                                worstSubtree = choseMoves(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, playedMoves, newTable, newDice);
+                            }
 
-                            //TODO condition
-                            if (bestSubtree < minValue) {
-                                minValue = bestSubtree;
-                                bestMove[0] = move1;
-                                bestMove[1] = move2;
+
+                            if (canFirst && worstSubtree.ratio > worstValue) {
+                                worstMove = playedMoves;
                             }
 
                         }
 
-            //TODO fix this, needs to return myValue, oppValue for condition and needs to return combination of best two moves
-            return minValue;
+            //if he made no moves, he had no moves to make, which means he skipped the move and let the opponent play
+            if(worstMove == null) {
+                worstMove = new OneMove(moves, table.whitePoints(), table.redPoints());
+                move.addChild(worstMove);
+                worstMove= choseMoves(currentTreeLevel.nextLevel(), currentDepth+1, totalDepth, worstMove, table, dices);
+            }
+            return worstMove;
         }
 
-        //TODO dices can't go more than twice the same fix that
 
-        if (currentTreeLevel == LEVEL.MYROLL) {
-            int avgValue = 0;
+        //I don't need to remember dices, pure luck brought me there
+        if (currentTreeLevel == LEVEL.MYROLL || currentTreeLevel == LEVEL.OPPROLL) {
+            Move[] moves = new Move[2];
+            moves[0]=moves[1]=null;
+            OneMove avgValue = new OneMove(moves, table.whitePoints(), table.redPoints());
+            double avgRatio = 0;
             for (int i = 1; i <= 6; i++) {
                 for (int j = i; j <= 6; j++) {
                     Dice newDice = new Dice(i, j);
-                    avgValue += choseMove(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, table, newDice);
+
+                    LEVEL nextTreeLevel = currentTreeLevel;
+
+                    if(dices.isDoubleDices() && !dices.wereDoubleDices()) {
+                        newDice.setWereDoubleDices();
+                        nextTreeLevel = nextTreeLevel.nextLevel().nextLevel().nextLevel();
+                    }
+                    else nextTreeLevel = nextTreeLevel.nextLevel();
+
+                    avgRatio += choseMoves(nextTreeLevel, currentDepth + 1, totalDepth, avgValue, table, newDice).ratio;
                 }
             }
-            return avgValue / 21;
-        }
-        if (currentTreeLevel == LEVEL.OPPROLL) {
-            int avgValue = 0;
-            for (int i = 1; i <= 6; i++) {
-                for (int j = i; j <= 6; j++) {
-                    Dice newDice = new Dice(i, j);
-                    avgValue += choseMove(currentTreeLevel.nextLevel(), currentDepth + 1, totalDepth, table, newDice);
-                }
-            }
-            return avgValue / 21;
+            moves[0]=moves[1]=null;
+            avgValue = new OneMove(moves, avgRatio/21);
+            return avgValue;
         }
 
-        return 0;
+        return null;    //can't happen, error
+    }
+
+    public void playMoves() {
+        OneMove chosenMoves = choseMoves(LEVEL.MYMOVE, 0, game.getTreeDepth(), new OneMove(new Move[2], game.table.whitePoints(), game.table.redPoints()), game.table, game.dices);
+
+        try {
+            game.table.move(chosenMoves.moves[0], game.dices);
+
+            if(game.checkPat()) return;
+
+            game.table.move(chosenMoves.moves[1], game.dices);
+        }catch(Exception e){}
     }
 }
