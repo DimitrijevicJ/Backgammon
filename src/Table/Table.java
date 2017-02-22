@@ -14,10 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by dz on 20.1.17..
  */
-//TODO TABLE SHOULD KNOW THE POINTS OF BOTH PLAYERS
 //TABLE SHOULD BE THE WAY WHITE PLAYER SEES IT
 public class Table {
-    private final int tableSize = 24;
+    private final int tableSize = 25;
     private Point[] points =  new Point[tableSize];
     private Point[] center = new Point[2];
     private Point[] outer = new Point[2];  //each player should have only its own outter and center
@@ -57,18 +56,16 @@ public class Table {
     public Table(Table table){
         {
             for(int i=0; i<tableSize; i++) points[i] = new Point(this);
-            for(int i=0; i<2; i++) { center[i] = new Point(this); outer[i] = new Point(this); }
+            for(int i=0; i<2; i++) { center[i] = new Point(this, table.center[i]); outer[i] = new Point(this, table.outer[i]); }
         }
-        {
-            //TODO COPY WHAT IS ON POINTS, ON CENTER AND IN OUTER
-        }
+
         onTheMove=table.onTheMove;
     }
 
     public void move(Move move, Dice dices)throws InvalidMoveException, NotAllTokensHomeException{
         //start token is always valid
         //check if the token is ours
-        if(checkToken(points[move.getFromPoint()].top())) throw new InvalidMoveException();  //TODO token not ours
+        if(checkToken(points[move.getFromPoint()].top())) throw new InvalidMoveException();
         //check if the move is valid for the player
         if (!checkDirection(move)) throw  new InvalidMoveException();
         //check if the move is valid
@@ -132,7 +129,6 @@ public class Table {
     public void putOnCenter(Token token){
         int tokenColor = token instanceof WhiteToken ? 0 : 1;
         center[tokenColor].put(token);
-        //TODO WHEN TOKEN PUT ON CENTER POINTS NEED TO BE ADDED FROM HIS PREVIOUS POSITION
     }
 
     private Token takeFromCenter(){
@@ -177,19 +173,44 @@ public class Table {
     public int whitePoints(){
         int count = 0;
         for(int i=1; i<=24; i++)
-            if(points[i].top() instanceof WhiteToken) count += points[i].count();
+            if(points[i].top() instanceof WhiteToken) count += points[i].count()*i;
+        count+=center[0].count()*25;
         return count;
     }
     public int redPoints(){
         int count = 0;
         for(int i=1; i<=24; i++)
-            if(points[i].top() instanceof RedToken) count += points[i].count();
+            if(points[i].top() instanceof RedToken) count += points[i].count()*i;
+        count+=center[1].count()*25;
         return count;
     }
 
     public boolean checkClosed(int player){
         int home = (player==0)?1:19, end = (player==0)?6:24;
+        Token token;
+        if(player==0) token = new WhiteToken();
+        else token = new RedToken();
+
         for(int i=home; home!=end; home++)
-            if()
+            if(points[i].count() == 0 || !token.sameType(points[i].top()) || points[i].count()==1) return false;
+        return true;
+    }
+
+    public void tokenPrint(Token token){
+        if(token instanceof WhiteToken) System.out.print('w');
+        else System.out.print('r');
+
+    }
+    public void print(){
+        System.out.println("Table");
+        for(int i=1; i<=24; i++){
+            System.out.print(i+":");
+            for(int j=0; j<points[i].count(); j++) tokenPrint(points[i].top());
+            System.out.print("\n\n");
+        }
+        System.out.println("Centers");
+        for(int i=0; i<2; i++)
+        for(int j=0; j<center[i].count(); j++) tokenPrint(center[i].top());
+
     }
 }

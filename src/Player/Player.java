@@ -21,7 +21,7 @@ import java.io.IOException;
 public abstract class Player extends Thread {
     private Turn turn = new Turn();
     protected Game game;
-    private int color;
+    protected int color;
 
     public Player(Game g, int col){game = g; color=col;}
 
@@ -34,13 +34,19 @@ public abstract class Player extends Thread {
             while(true){
                 //wait for your turn
                 synchronized (turn){
+                    if(color == 0) game.waitPlayerReady=1;
+                    System.out.println("Player"+color+"waiting for it's turn");
                     turn.wait();
                 }
+                System.out.println("Player"+color+"'s turn");
 
                 playMoves();
 
                 //turn played, continue game
-                game.getGameTurn().notify();
+                synchronized (game.getGameTurn()) {
+                    System.out.println("Player"+color+"done");
+                    game.getGameTurn().notify();
+                }
             }
         }catch (InterruptedException e){
             //let player know if he won or lost
@@ -117,4 +123,10 @@ public abstract class Player extends Thread {
         if(color == 0) return game.table.whitePoints();
         else return game.table.redPoints();
     }
+
+    /*public static void main(String[] args){
+        Player player = new Human(Game.game, 0);
+        Game.game.joinPlayer(player);
+        player.start();
+    }*/
 }

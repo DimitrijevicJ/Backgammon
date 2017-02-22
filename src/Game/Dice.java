@@ -33,8 +33,8 @@ public class Dice {
     }
 
     private int rollDice(){
-        //TODO rolling dice algorithm
-        return 0;
+        //clockhand algorithm
+        return (int)(Math.random()*6+1);
     }
 
     public void setWereDoubleDices(){wereDoubleDices = true;}

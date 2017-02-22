@@ -1,11 +1,13 @@
 package Game;
 
+import AI.AI;
 import Game.EndGames.Backgammon;
 import Game.EndGames.EndGame;
 import Game.EndGames.Gammon;
 import Game.EndGames.Victory;
 import Player.Player;
 import Table.Table;
+import Player.Human;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,22 +15,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by dz on 20.1.17..
  */
 public class Game extends Thread{
-    private Player[] players = new Player[2];
-    {
-        players[0] = new Player(this,0);
-        players[1] = new Player(this, 1);
-    }
-    private Player winner = null;
 
+
+    private Player[] players = new Player[2];
+    private Player winner = null;
+    private int playerCount = 0;
     private Turn[] turns = new Turn[2];
-    {
-        turns[0] = players[0].getTurn();
-        turns[1] = players[1].getTurn();
+
+
+    public void joinPlayer(Player player) {
+        players[playerCount] = player;
+        turns[playerCount] = player.getTurn();
+        playerCount++;
+        synchronized (playersJoined) {
+            if (playerCount == 2) playersJoined.notify();
+        }
     }
 
     private int onTheMove = 0;
 
     private Turn gameTurn = new Turn();
+    private Turn playersJoined = new Turn();
+    public int waitPlayerReady = 0;
 
     public Dice dices = new Dice();
     private boolean wereDoubleDices = false;
@@ -37,18 +45,24 @@ public class Game extends Thread{
 
     public EndGame endGame=null;
 
-    private int treeDepth = 0;
+    private int treeDepth = 10;
     //TODO ADD TREEDEPTH
 
     public void run(){
-        players[0].start(); players[1].start();
+        synchronized (playersJoined){
+            try{
+                playersJoined.wait();
+            }catch(InterruptedException e){}
+        }
 
         while(true){
             //TODO FIX SYNCHRONIZATION
             dices.rollDices();
 
             //notify the player that needs to play
-            turns[onTheMove].notify();
+            synchronized (turns[onTheMove]) {
+                turns[onTheMove].notify();
+            }
 
             //wait until the player is done
             synchronized (gameTurn) {
@@ -70,7 +84,6 @@ public class Game extends Thread{
                 table.changePlayer();
                 wereDoubleDices = false;
             }
-            //TODO GAME NEEDS TO CHECK FOR THE PAT AND NO CAN PLAY SITUATION
         }
     }
 
@@ -81,7 +94,6 @@ public class Game extends Thread{
     public int getTreeDepth(){return treeDepth;}
 
     public boolean checkPat(){
-        //TODO DO CHECK PAT FUNCTION
         if(!table.checkCenter(onTheMove) && !table.checkCenter(getOtherPlayer())){
             if(table.checkClosed(onTheMove) && table.checkClosed(getOtherPlayer())) return true;
         }
@@ -114,4 +126,16 @@ public class Game extends Thread{
     }
 
     public Player getWinner() {return winner;}
+
+    public static Game game;
+    public static void main(String[] args){
+        game = new Game();
+       // game.table.print();
+        game.start();
+        Player player1 = new Human(game,0);
+        Player player2 = new Human(game,1);
+        game.joinPlayer(player1);
+        game.joinPlayer(player2);
+        player1.start(); player2.start();
+    }
 }

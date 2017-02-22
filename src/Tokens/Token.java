@@ -5,4 +5,5 @@ package Tokens;
  */
 public abstract class Token {
     public abstract boolean sameType(Token token);
+    public abstract Token clone();
 }

@@ -8,4 +8,5 @@ public class WhiteToken extends Token {
     public boolean sameType(Token token) {
         return (token instanceof WhiteToken)?true:false;
     }
+    public Token clone(){return new WhiteToken();}
 }

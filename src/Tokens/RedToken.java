@@ -8,4 +8,5 @@ public class RedToken extends Token{
     public boolean sameType(Token token){
         return (token instanceof RedToken)?true:false;
     }
+    public Token clone(){return new RedToken();}
 }

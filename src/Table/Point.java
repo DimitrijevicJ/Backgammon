@@ -11,6 +11,13 @@ public class Point {
     private Table table;
 
     public Point(Table t){ table = t; }
+    public Point(Table t, Point p){
+        table = t;
+        for(int i=0; i < p.count(); i++){
+            Token token = p.top().clone();
+            put(token);
+        }
+    }
 
     public int count(){return top+1;}
 
